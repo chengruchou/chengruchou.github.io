@@ -1,6 +1,9 @@
 (() => {
   const root = document.documentElement;
   const heroVisual = document.querySelector(".hero-visual");
+  const pageTurns = Array.from(
+    document.querySelectorAll("[data-page-turn]"),
+  );
   const revealItems = Array.from(document.querySelectorAll("[data-reveal]"));
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
@@ -34,6 +37,66 @@
   let frame = 0;
   let pointerFrame = 0;
 
+  const updatePageTurns = () => {
+    const startLine = window.innerHeight * 0.9;
+    const endLine = window.innerHeight * 0.18;
+    const travel = Math.max(startLine - endLine, 1);
+
+    pageTurns.forEach((turn) => {
+      const rect = turn.getBoundingClientRect();
+      const rawProgress = Math.min(
+        Math.max((startLine - rect.top) / travel, 0),
+        1,
+      );
+      const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
+      const sheetFade =
+        rawProgress < 0.76
+          ? 1
+          : Math.max(1 - (rawProgress - 0.76) / 0.24, 0);
+      const creaseY = turn.offsetHeight * (0.84 - easedProgress * 0.69);
+
+      turn.style.setProperty(
+        "--turn-angle",
+        `${easedProgress * -112}deg`,
+      );
+      turn.style.setProperty("--turn-lift", `${easedProgress * -18}px`);
+      turn.style.setProperty(
+        "--turn-sheet-opacity",
+        sheetFade.toFixed(3),
+      );
+      turn.style.setProperty("--turn-crease-y", `${creaseY}px`);
+      turn.style.setProperty(
+        "--turn-grid-opacity",
+        `${easedProgress * 0.72}`,
+      );
+      turn.style.setProperty(
+        "--turn-grid-scale",
+        `${0.96 + easedProgress * 0.04}`,
+      );
+      turn.style.setProperty(
+        "--turn-glow-opacity",
+        `${easedProgress}`,
+      );
+      turn.style.setProperty(
+        "--turn-glow-y",
+        `${(1 - easedProgress) * -28}px`,
+      );
+      turn.style.setProperty(
+        "--turn-crease-opacity",
+        `${0.45 + easedProgress * 0.55}`,
+      );
+      turn.style.setProperty(
+        "--turn-hint-opacity",
+        `${Math.max(1 - easedProgress * 1.16, 0)}`,
+      );
+      turn.classList.toggle(
+        "is-turning",
+        rawProgress > 0.03 && rawProgress < 0.97,
+      );
+      turn.classList.toggle("is-turned", rawProgress >= 0.97);
+    });
+  };
+
   const update = () => {
     const maxScroll = root.scrollHeight - window.innerHeight;
     const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
@@ -44,6 +107,7 @@
       Math.min(Math.max(progress, 0), 1).toString(),
     );
     root.style.setProperty("--hero-parallax", `${heroOffset}px`);
+    updatePageTurns();
     frame = 0;
   };
 
