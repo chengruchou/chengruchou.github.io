@@ -48,26 +48,53 @@
         Math.max((startLine - rect.top) / travel, 0),
         1,
       );
-      const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
-      const sheetFade =
-        rawProgress < 0.76
-          ? 1
-          : Math.max(1 - (rawProgress - 0.76) / 0.24, 0);
-      const creaseY = turn.offsetHeight * (0.84 - easedProgress * 0.69);
-
-      turn.style.setProperty(
-        "--turn-angle",
-        `${easedProgress * -112}deg`,
+      const easedProgress =
+        rawProgress * rawProgress * (3 - 2 * rawProgress);
+      const clipBottom = Math.min(easedProgress * 150, 100);
+      const clipTop = Math.min(
+        Math.max(easedProgress * 150 - 50, 0),
+        100,
       );
-      turn.style.setProperty("--turn-lift", `${easedProgress * -18}px`);
+      const curlOpacity =
+        rawProgress < 0.035
+          ? rawProgress / 0.035
+          : rawProgress > 0.965
+            ? (1 - rawProgress) / 0.035
+            : 1;
+      const curlScale =
+        0.72 + Math.sin(Math.PI * rawProgress) * 0.38;
+      turn.style.setProperty(
+        "--curl-top",
+        `${clipTop.toFixed(3)}%`,
+      );
+      turn.style.setProperty(
+        "--curl-bottom",
+        `${clipBottom.toFixed(3)}%`,
+      );
+      turn.style.setProperty(
+        "--curl-left",
+        `${-9 + easedProgress * 116}%`,
+      );
+      turn.style.setProperty(
+        "--curl-y",
+        `${106 - easedProgress * 112}%`,
+      );
+      turn.style.setProperty("--curl-scale", curlScale.toFixed(3));
+      turn.style.setProperty(
+        "--curl-rotation",
+        `${-7 + easedProgress * 14}deg`,
+      );
+      turn.style.setProperty(
+        "--curl-opacity",
+        Math.max(curlOpacity, 0).toFixed(3),
+      );
       turn.style.setProperty(
         "--turn-sheet-opacity",
-        sheetFade.toFixed(3),
+        rawProgress >= 0.995 ? "0" : "1",
       );
-      turn.style.setProperty("--turn-crease-y", `${creaseY}px`);
       turn.style.setProperty(
         "--turn-grid-opacity",
-        `${easedProgress * 0.72}`,
+        `${easedProgress * 0.78}`,
       );
       turn.style.setProperty(
         "--turn-grid-scale",
@@ -78,16 +105,16 @@
         `${easedProgress}`,
       );
       turn.style.setProperty(
+        "--turn-glow-x",
+        `${-12 + easedProgress * 118}%`,
+      );
+      turn.style.setProperty(
         "--turn-glow-y",
-        `${(1 - easedProgress) * -28}px`,
+        `${112 - easedProgress * 120}%`,
       );
       turn.style.setProperty(
         "--turn-crease-opacity",
-        `${0.45 + easedProgress * 0.55}`,
-      );
-      turn.style.setProperty(
-        "--turn-hint-opacity",
-        `${Math.max(1 - easedProgress * 1.16, 0)}`,
+        `${0.2 + easedProgress * 0.8}`,
       );
       turn.classList.toggle(
         "is-turning",
